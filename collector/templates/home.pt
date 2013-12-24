@@ -21,15 +21,13 @@
         <!-- <p class="lead">Basic grid layouts to get you familiar with building within the Bootstrap grid system.</p> -->
       </div>
       
-      <h3>Recent</h3>
+      <h2>Covers</h2>
 
-      <div class="row">
-        <div class="col-md-4">
-          .col-md-4
-        </div>
-        <div class="col-md-4">.col-md-4</div>
-        <div class="col-md-4">.col-md-4</div>
-      </div>
+      ${structure: covers}
+
+      <h2>Music</h2>
+
+      ${structure: music}
     </div>
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->

@@ -1,35 +1,19 @@
 from pyramid.response import Response
 from pyramid.view import view_config
 
-from sqlalchemy.exc import DBAPIError
+# from sqlalchemy.exc import DBAPIError
 
-from .models import (
-    DBSession,
-    MyModel,
-    )
+from .models import DBSession, Cover, Music
 
 
-@view_config(route_name='home', renderer='templates/mytemplate.pt')
-def my_view(request):
-    try:
-        one = DBSession.query(MyModel).filter(MyModel.name == 'one').first()
-    except DBAPIError:
-        return Response(conn_err_msg, content_type='text/plain', status_int=500)
-    return {'one': one, 'project': 'collector'}
+@view_config(route_name='home', renderer='templates/home.pt')
+def view_home(request):
+    covers = DBSession.query(Cover).order_by(Cover.title).all()
+    covers = u"".join(u"<div>{0}</div>".format(c.title) for c in covers)
 
-conn_err_msg = """\
-Pyramid is having a problem using your SQL database.  The problem
-might be caused by one of the following things:
+    music = DBSession.query(Music).order_by(Music.title).all()
+    # music = u"".join(u"<div>{0} -- {1} -- {2}</div>".format(c.title, c.WorkName, c.Composer) for c in music)
 
-1.  You may need to run the "initialize_collector_db" script
-    to initialize your database tables.  Check your virtual 
-    environment's "bin" directory for this script and try to run it.
+    music = u"<pre>[{0}]</pre>".format(u",\n".join(m.json for m in music))
 
-2.  Your database server may not be running.  Check that the
-    database server referred to by the "sqlalchemy.url" setting in
-    your "development.ini" file is running.
-
-After you fix the problem, please restart the Pyramid application to
-try it again.
-"""
-
+    return {"covers": covers, "music": music}
