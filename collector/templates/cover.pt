@@ -1,0 +1,53 @@
+<html metal:use-macro="base.macros['base']">
+  <tal:block metal:fill-slot="title">Cover</tal:block>
+  <tal:block metal:fill-slot="content">
+    <h2>${cover.title}</h2>
+
+    <small>Catalogued: ${cover.CatDate.strftime("%Y/%m/%d")}</small>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Composer</th>
+          <th>Opus #</th>
+          <th>Quantity</th>
+          <th>Type</th>
+          <th>Instrument</th>
+          <th>Number</th>
+          <th>Key Sig.</th>
+          <th>Work Name</th>
+          <th>Soloist 1</th>
+          <th>Soloist 2<th>
+          <th>Soloist 3</th>
+          <th>Soloist 4</th>
+          <th>Condutor</th>
+          <th>Chorus</th>
+          <th>Ensemble</th>
+          <th>Class</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr tal:repeat="m cover.music" data-music-id="${m.id}">
+          <td>${m.title}</td>
+          <td><a href="${request.route_url('composer', composer=m.Composer)}">${m.Composer}</a></td>
+          <td>${m.OpusX}</td>
+          <td>${m.WorkQty}</td>
+          <td>${m.MusicType}</td>
+          <td>${m.Instrument}</td>
+          <td>${m.WorkNoX}</td>
+          <td>${m.KeySig}</td>
+          <td>${m.WorkName}</td>
+          <td>${m.Solo1}</td>
+          <td>${m.Solo2}</td>
+          <td>${m.Solo3}</td>
+          <td>${m.Solo4}</td>
+          <td>${m.Conductor}</td>
+          <td>${m.Chorus}</td>
+          <td>${m.Ensemble}</td>
+          <td>${m.MusicClass}</td>
+        </tr>
+      </tbody>
+    </table>
+  </tal:block>
+</html>

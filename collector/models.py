@@ -9,7 +9,11 @@ def x(v):
     return v
 
 def asdict(self):
-    return {k: x(getattr(self, k)) for k in self.__mapper__.columns.keys() if x(getattr(self, k))}
+    return {}
+    ks = self.__mapper__.columns.keys()
+    # ks = ["title"]
+    return {k: k for k in ks if x(getattr(self, k))}
+    # return {k: x(getattr(self, k)) for k in ks if x(getattr(self, k))}
 
 from sqlalchemy import (BigInteger, Boolean, Column, DateTime, Float, Integer,
                         MetaData, Numeric, SmallInteger, String, ForeignKey)
@@ -52,6 +56,11 @@ class Cover(Base):
     id = Column('CoverNo', Integer, primary_key=True, autoincrement=True)
     title = Column('CoverTitle', String)
     Format = Column('Format', String)
+    CatDate = Column('CatDate', DateTime)
+
+    music = relationship("Music", backref="cover")
+
+    # Maybe unused fields
     CoverSet = Column('CoverSet', SmallInteger)
     Label = Column('Label', String)
     CatNo = Column('CatNo', String)
@@ -75,13 +84,10 @@ class Cover(Base):
     CommentsC = Column('CommentsC', String)
     FlagC = Column('FlagC', Boolean, nullable=False, default=False)
     IconNo = Column('IconNo', SmallInteger)
-    CatDate = Column('CatDate', DateTime)
     AcqDateQ = Column('AcqDateQ', DateTime)
     CostQ = Column('CostQ', Numeric)
     ValueQ = Column('ValueQ', Numeric)
     CrysFlagC = Column('CrysFlagC', Boolean, nullable=False, default=False)
-
-    music = relationship("Music")
 
 
 class Music(Base):
@@ -95,10 +101,15 @@ class Music(Base):
     def json(self):
         return dumps(asdict(self))
 
+    # Fields from Patrick's email:
+    # Music: Composer, opus no, quantity, work type, instrument, number, key,
+    # title of work, soloist (x4), conductor, chorus, ensemble, class of music.
+
     id = Column('MusicNo', Integer, primary_key=True, autoincrement=True)
     title = Column('FullTitle', String)
 
     CoverRef = Column('CoverRef', Integer, ForeignKey('Covers.CoverNo'))
+
     Composer = Column('Composer', String)
     OpusX = Column('OpusX', String)
     WorkQty = Column('WorkQty', SmallInteger)
@@ -115,6 +126,8 @@ class Music(Base):
     Chorus = Column('Chorus', String)
     Ensemble = Column('Ensemble', String)
     MusicClass = Column('MusicClass', String)
+
+    # Possibly unused fields
     CompDateX = Column('CompDateX', String)
     PerfDateX = Column('PerfDateX', String)
     DurationX = Column('DurationX', String)
