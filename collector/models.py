@@ -1,12 +1,16 @@
+# -*- encoding: utf-8 -*-
+
 from json import dumps
 
 from datetime import datetime
+
 
 def x(v):
     if isinstance(v, datetime):
         return "{0}-{1}-{2}".format(v.year, v.month, v.day)
         # return v.strftime("%Y-%m-%d")
     return v
+
 
 def asdict(self):
     return {}
@@ -17,6 +21,7 @@ def asdict(self):
 
 from sqlalchemy import (BigInteger, Boolean, Column, DateTime, Float, Integer,
                         MetaData, Numeric, SmallInteger, String, ForeignKey)
+from sqlalchemy import types
 
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -90,6 +95,26 @@ class Cover(Base):
     CrysFlagC = Column('CrysFlagC', Boolean, nullable=False, default=False)
 
 
+class KeySigString(types.TypeDecorator):
+    impl = types.String
+
+    def process_result_value(self, value, dialect):
+        return sharp_flatify(value)
+
+
+def sharp_flatify(text):
+    if text is not None:
+        if text.lower().endswith(" min"):
+            # raise RuntimeError()
+            text = text[:-len(" min")].lower()
+        return text.replace(u"Þ", u"♭").replace(u"þ", u"♭").replace(u"#", u"♯")
+    return ""
+
+
+def nbspify(text):
+    return text.replace(" ", "&nbsp;")
+
+
 class Music(Base):
     __tablename__ = "Music"
     __table_args__ = {"extend_existing": True, "sqlite_autoincrement": True}
@@ -101,12 +126,42 @@ class Music(Base):
     def json(self):
         return dumps(asdict(self))
 
+    def soloists(self, request):
+        x = [self.Solo1, self.Solo2, self.Solo3, self.Solo4]
+
+        def reorder(x):
+            x = [_.strip() for _ in x.split(",")]
+            reordered = u"&nbsp;".join([x[-1]] + x[:-1])
+            # TODO(pwaller): Add request.route_url('soloists')
+            url = request.route_url("soloists", soloist=reordered)
+            return u'<a href="{}">{}</a>'.format(url, reordered)
+
+        x = [reorder(x) for x in x if x]
+        if not x:
+            return u""
+        if len(x) == 1:
+            (x,) = x
+            return x
+        return u" ".join(x)
+        # return ", ".join(x[:-1]) + " and " + x[-1]
+
+    @property
+    def conductor(self):
+        if self.Conductor:
+            return self.Conductor.replace(u" ", "&nbsp;")
+        return u""
+
+    def ensemble(self, request):
+        if self.Ensemble:
+            return self.Ensemble.replace(u" ", "&nbsp;")
+        return u""
+
     # Fields from Patrick's email:
     # Music: Composer, opus no, quantity, work type, instrument, number, key,
     # title of work, soloist (x4), conductor, chorus, ensemble, class of music.
 
     id = Column('MusicNo', Integer, primary_key=True, autoincrement=True)
-    title = Column('FullTitle', String)
+    title = Column('FullTitle', KeySigString)
 
     CoverRef = Column('CoverRef', Integer, ForeignKey('Covers.CoverNo'))
 
@@ -116,7 +171,7 @@ class Music(Base):
     MusicType = Column('MusicType', String)
     Instrument = Column('Instrument', String)
     WorkNoX = Column('WorkNoX', String)
-    KeySig = Column('KeySig', String)
+    KeySig = Column('KeySig', KeySigString)
     WorkName = Column('WorkName', String)
     Solo1 = Column('Solo1', String)
     Solo2 = Column('Solo2', String)
