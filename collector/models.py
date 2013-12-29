@@ -129,11 +129,11 @@ class Music(Base):
     def soloists(self, request):
         x = [self.Solo1, self.Solo2, self.Solo3, self.Solo4]
 
-        def reorder(x):
-            x = [_.strip() for _ in x.split(",")]
+        def reorder(orig):
+            x = [_.strip() for _ in orig.split(",")]
             reordered = u"&nbsp;".join([x[-1]] + x[:-1])
             # TODO(pwaller): Add request.route_url('soloists')
-            url = request.route_url("soloists", soloist=reordered)
+            url = request.route_url("soloist", who=orig)
             return u'<a href="{}">{}</a>'.format(url, reordered)
 
         x = [reorder(x) for x in x if x]
@@ -145,15 +145,37 @@ class Music(Base):
         return u" ".join(x)
         # return ", ".join(x[:-1]) + " and " + x[-1]
 
-    @property
-    def conductor(self):
+    def composer(self, request):
+        def linkify(orig):
+            url = request.route_url("composer", who=orig)
+            fmt = u'<a href="{}">{}</a>'
+            return fmt.format(url, orig.replace(u" ", u"&nbsp;"))
+
+        if self.composer:
+            # return self.composer.replace(u" ", u"&nbsp;")
+            return linkify(self.Composer)
+        return u""
+
+    def conductor(self, request):
+        def linkify(orig):
+            url = request.route_url("conductor", who=orig)
+            fmt = u'<a href="{}">{}</a>'
+            return fmt.format(url, orig.replace(u" ", u"&nbsp;"))
+
         if self.Conductor:
-            return self.Conductor.replace(u" ", "&nbsp;")
+            # return self.Conductor.replace(u" ", u"&nbsp;")
+            return linkify(self.Conductor)
         return u""
 
     def ensemble(self, request):
         if self.Ensemble:
-            return self.Ensemble.replace(u" ", "&nbsp;")
+            return self.Ensemble.replace(u" ", u"&nbsp;")
+        return u""
+
+    @property
+    def number(self):
+        if self.WorkNoX:
+            return self.WorkNoX.replace(u" ", u"&nbsp;")
         return u""
 
     # Fields from Patrick's email:

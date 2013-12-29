@@ -1,16 +1,16 @@
 <html metal:use-macro="base.macros['base']">
-  <tal:block metal:fill-slot="title">Composers</tal:block>
+  <tal:block metal:fill-slot="title">${title}</tal:block>
   <tal:block metal:fill-slot="content">
       
-  <h2>Composers</h2>
+  <h2>${title}</h2>
 
-  <div tal:repeat="(c, count) composers">
+  <div tal:repeat="(person, count) people">
     <div>
       <!-- TODO: pill? -->
       <span style="text-align: right; width: 5em; color: #999; display: inline-block;">
         ${count}
       </span>
-      <a href="${request.route_url('composer', composer=c)}">${c}</a>
+      <a href="${request.route_url(routename, who=person)}">${person}</a>
     </div>
   </div>
 

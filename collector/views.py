@@ -1,5 +1,6 @@
 import json
 
+from collections import defaultdict
 from itertools import groupby
 
 from pyramid.response import FileIter, Response
@@ -98,7 +99,48 @@ def view_composers(request):
                                 ).group_by(Music.Composer
                                            ).order_by(Music.Composer).all()
 
-    return {"base": base(), u"composers": composers}
+    return {
+        u"base": base(),
+        u"routename": "composer",
+        u"people": composers,
+        u"title": "Composers",
+    }
+
+
+@view_config(route_name="conductors", renderer="templates/composers.pt")
+def view_conductors(request):
+    conductors = DBSession.query(Music.Conductor, func.count(Music.Conductor)
+                                 ).group_by(Music.Conductor
+                                            ).order_by(Music.Conductor).all()
+
+    return {
+        u"base": base(),
+        u"people": conductors,
+        u"title": u"Conductors",
+        u"routename": u"conductor",
+    }
+
+
+@view_config(route_name="soloists", renderer="templates/composers.pt")
+def view_soloists(request):
+
+    def get_s(what):
+        return DBSession.query(what, func.count(what)).group_by(what).all()
+
+    ss = Music.Solo1, Music.Solo2, Music.Solo3, Music.Solo4
+
+    soloists = defaultdict(int)
+
+    for s in ss:
+        for key, value in get_s(s):
+            soloists[key] += value
+
+    return {
+        u"base": base(),
+        u"people": sorted(soloists.items()),
+        u"title": u"Soloists",
+        u"routename": u"soloist",
+    }
 
 
 def table_group(records, key):
@@ -121,7 +163,7 @@ def table_group(records, key):
 
 @view_config(route_name="composer", renderer="templates/list_music.pt")
 def view_composer(request):
-    composer = request.matchdict["composer"]
+    composer = request.matchdict["who"]
 
     music = DBSession.query(Music).filter(
         Music.Composer == composer)
@@ -135,6 +177,26 @@ def view_composer(request):
     return {
         u"base": base(),
         u"title": u"Music composed by {}".format(composer),
+        u"music": result,
+    }
+
+
+@view_config(route_name="conductor", renderer="templates/list_music.pt")
+def view_conductor(request):
+    conductor = request.matchdict["who"]
+
+    music = DBSession.query(Music).filter(
+        Music.Conductor == conductor)
+
+    music = music.options(eagerload(Music.cover))
+
+    music = music.all()
+
+    result = table_group(music, key=lambda v: v.cover)
+
+    return {
+        u"base": base(),
+        u"title": u"Music conducted by {}".format(conductor),
         u"music": result,
     }
 
@@ -165,19 +227,21 @@ def view_download(request):
     return Response(app_iter=FileIter(fd), content_disposition=cd)
 
 
-@view_config(route_name="soloists", renderer="templates/list_music.pt")
-def view_soloists(request):
+@view_config(route_name="soloist", renderer="templates/list_music.pt")
+def view_soloist(request):
     # return NotImplementedError("Soloist = {}".format()
 
-    soloist = request.matchdict["soloist"]
+    soloist = request.matchdict["who"]
 
-    expr = S.or_(Music.Solo1.like("%{}%".format(soloist)))
+    ss = Music.Solo1, Music.Solo2, Music.Solo3, Music.Solo4
+    expr = S.or_(*(s.like("%{}%".format(soloist)) for s in ss))
+
     music = DBSession.query(Music)
-    music = music.options(eagerload(Music.cover))
 
     music = music.filter(expr)
+    music = music.options(eagerload(Music.cover))
 
-    music = music.limit(100)
+    # music = music.limit(100)
     music = music.all()
 
     return {

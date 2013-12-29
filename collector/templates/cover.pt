@@ -18,8 +18,8 @@
           <th>Quantity</th>
           <th>Type</th>
           <th>Instrument</th>
-          <th>Number</th>
-          <th>Key&nbsp;Sig.</th>
+          <th>No.</th>
+          <th>Key</th>
           <th>Work&nbsp;Name</th>
           <th>Soloists</th><!-- 
           <th>Soloist 1</th>
@@ -40,16 +40,12 @@
           <td><small><em>${m.CompDateX}</em></small></td>
         </tr>
         <tr data-music-id="${m.id}" class="${'tr-even' if i%2 else ''}">
-          <td>
-            <a href="${request.route_url('composer', composer=m.Composer)}">
-              ${m.Composer}
-            </a>
-          </td>
+          <td>${structure: m.composer(request)}</td>
           <td>${m.OpusX}</td>
           <td>${m.WorkQty}</td>
           <td>${m.MusicType}</td>
           <td>${m.Instrument}</td>
-          <td>${m.WorkNoX}</td>
+          <td>${structure: m.number}</td>
           <td>${m.KeySig}</td>
           <td>${m.WorkName}</td>
           <td>${structure: m.soloists(request)}</td><!-- 
@@ -57,7 +53,7 @@
           <td>${m.Solo2}</td>
           <td>${m.Solo3}</td>
           <td>${m.Solo4}</td> -->
-          <td>${structure: m.conductor}</td>
+          <td>${structure: m.conductor(request)}</td>
           <td>${m.Chorus}</td>
           <td>${structure: m.ensemble(request)}</td>
           <td>${m.MusicClass}</td>

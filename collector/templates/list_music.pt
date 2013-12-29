@@ -6,14 +6,17 @@
 
   <table class="table">
     <thead>
-      <tr><th>Music title</th><th>Cover</th></tr>
+      <tr>
+        <th>Cover</th>
+        <th>Music title</th>
+      </tr>
     </thead>
     <tbody>
     <tr tal:repeat="(m, crspan, evenclass) music" class="${evenclass}">
-      <td>${m.title}</td>
       <td tal:condition="crspan != 0" rowspan="${crspan}">
         <small><a href="${request.route_url('cover', cover_id=m.cover.id)}">${m.cover.title}</a></small>
       </td>
+      <td>${m.title}</td>
     </tr>
     </tbody>
   </table>
