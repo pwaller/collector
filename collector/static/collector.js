@@ -48,6 +48,8 @@ $(function() {
 
   $("form").on("submit", function(ev) { ev.preventDefault(); console.log("Submit ", $("#search").val()) })
 
+  $("#search").focus()
+
   try {
     var hash_obj = JSON.parse(window.location.hash.substring(1))
     console.log("music id = ", hash_obj.music_id)
