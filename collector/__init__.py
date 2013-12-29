@@ -29,7 +29,8 @@ def main(global_config, **settings):
     config.add_route('soloist', '/soloists/{who}')
     config.add_route('soloists', '/soloists/')
 
-    config.add_route('soloists', '/soloists/{soloist}')
+    config.add_route('ensemble', '/ensembles/{who}')
+    config.add_route('ensembles', '/ensembles/')
 
     config.scan()
 

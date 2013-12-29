@@ -168,8 +168,12 @@ class Music(Base):
         return u""
 
     def ensemble(self, request):
+        def linkify(orig):
+            url = request.route_url("ensemble", who=orig)
+            fmt = u'<a href="{}">{}</a>'
+            return fmt.format(url, orig.replace(u" ", u"&nbsp;"))
         if self.Ensemble:
-            return self.Ensemble.replace(u" ", u"&nbsp;")
+            return linkify(self.Ensemble)
         return u""
 
     @property

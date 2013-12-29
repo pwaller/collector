@@ -121,6 +121,20 @@ def view_conductors(request):
     }
 
 
+@view_config(route_name="ensembles", renderer="templates/composers.pt")
+def view_ensembles(request):
+    ensembles = DBSession.query(Music.Ensemble, func.count(Music.Ensemble)
+                                 ).group_by(Music.Ensemble
+                                            ).order_by(Music.Ensemble).all()
+
+    return {
+        u"base": base(),
+        u"people": ensembles,
+        u"title": u"Ensembles",
+        u"routename": u"ensemble",
+    }
+
+
 @view_config(route_name="soloists", renderer="templates/composers.pt")
 def view_soloists(request):
 
@@ -197,6 +211,26 @@ def view_conductor(request):
     return {
         u"base": base(),
         u"title": u"Music conducted by {}".format(conductor),
+        u"music": result,
+    }
+
+
+@view_config(route_name="ensemble", renderer="templates/list_music.pt")
+def view_ensemble(request):
+    ensemble = request.matchdict["who"]
+
+    music = DBSession.query(Music).filter(
+        Music.Ensemble == ensemble)
+
+    music = music.options(eagerload(Music.cover))
+
+    music = music.all()
+
+    result = table_group(music, key=lambda v: v.cover)
+
+    return {
+        u"base": base(),
+        u"title": u"Music performed by {}".format(ensemble),
         u"music": result,
     }
 
