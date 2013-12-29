@@ -15,12 +15,15 @@ def main(global_config, **settings):
     config.add_static_view('static', 'static', cache_max_age=3600)
     
     config.add_route('home', '/')
+    config.add_route('download', '/download')
     config.add_route('query', '/query')
 
     config.add_route('composer', '/composers/{composer}')
-    config.add_route('composers', '/composers')
+    config.add_route('composers', '/composers/')
 
     config.add_route('cover', '/covers/{cover_id}')
+
+    config.add_route('soloists', '/soloists/{soloist}')
 
     config.scan()
 

@@ -2,17 +2,16 @@ import json
 
 from itertools import groupby
 
-from pyramid.response import Response
+from pyramid.response import FileIter, Response
 from pyramid.view import view_config
 from pyramid.url import urlencode
 
 import sqlalchemy as S
 # from sqlalchemy.exc import DBAPIError
 
+from sqlalchemy.orm import eagerload
+
 from .models import DBSession, Cover, Music
-
-
-from nltk import edit_distance
 
 from contextlib import contextmanager
 from time import time
@@ -99,25 +98,15 @@ def view_composers(request):
                                 ).group_by(Music.Composer
                                            ).order_by(Music.Composer).all()
 
-    return {u"composers": composers}
+    return {"base": base(), u"composers": composers}
 
 
-@view_config(route_name="composer", renderer="templates/list_music.pt")
-def view_composer(request):
-    composer = request.matchdict["composer"]
-
-    music = DBSession.query(Music).filter(
-        Music.Composer == composer)
-
-    from sqlalchemy.orm import eagerload
-    music = music.options(eagerload(Music.cover))
-
-    music = music.all()
+def table_group(records, key):
 
     rowspans = []
     evens = []
 
-    for i, (cover, cs) in enumerate(groupby(music, key=lambda v: v.cover)):
+    for i, (cover, cs) in enumerate(groupby(records, key=key)):
 
         n = len(list(cs))
         evens.extend("" if i % 2 else "tr-even" for _ in xrange(n))
@@ -127,7 +116,27 @@ def view_composer(request):
             # Use rowspan=0 for non-present items
             rowspans.append(0)
 
-    return {u"composer": composer, u"music": zip(music, rowspans, evens)}
+    return zip(records, rowspans, evens)
+
+
+@view_config(route_name="composer", renderer="templates/list_music.pt")
+def view_composer(request):
+    composer = request.matchdict["composer"]
+
+    music = DBSession.query(Music).filter(
+        Music.Composer == composer)
+
+    music = music.options(eagerload(Music.cover))
+
+    music = music.all()
+
+    result = table_group(music, key=lambda v: v.cover)
+
+    return {
+        u"base": base(),
+        u"title": u"Music composed by {}".format(composer),
+        u"music": result,
+    }
 
 
 from pyramid.renderers import get_renderer
@@ -143,3 +152,36 @@ def view_cover(request):
 
     cover = DBSession.query(Cover).filter(Cover.id == cover_id).one()
     return {"cover": cover, "base": base()}
+
+
+@view_config(route_name="download")
+def view_download(request):
+    # TODO(pwaller): safe backup
+    # raise RuntimeError
+    # return Response("", content_type="text/plain")
+    # return FileResponse(DBSession.bind.url.database)
+    fd = open(DBSession.bind.url.database)
+    cd = 'attachment; filename="collector.sqlite"'
+    return Response(app_iter=FileIter(fd), content_disposition=cd)
+
+
+@view_config(route_name="soloists", renderer="templates/list_music.pt")
+def view_soloists(request):
+    # return NotImplementedError("Soloist = {}".format()
+
+    soloist = request.matchdict["soloist"]
+
+    expr = S.or_(Music.Solo1.like("%{}%".format(soloist)))
+    music = DBSession.query(Music)
+    music = music.options(eagerload(Music.cover))
+
+    music = music.filter(expr)
+
+    music = music.limit(100)
+    music = music.all()
+
+    return {
+        "base": base(),
+        "music": table_group(music, lambda m: m.cover),
+        "title": u"Soloist {}".format(soloist)
+    }
