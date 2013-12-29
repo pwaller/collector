@@ -1,7 +1,32 @@
 <html metal:use-macro="base.macros['base']">
 <tal:block metal:fill-slot="content">
-  <form>
-    <input id="search" type="text" class="form-control" />
+  <div class="jumbotron">
+    <h2 style="margin-top: 0px;">Type something to start:</h2>
+    <form>
+      <input id="search" type="text" class="form-control" />
+    </form>
+  </div>
+
+  <hr>
+
+  <h3>or, add a new cover:</h3>
+
+  <hr>
+
+  <form class="form-horizontal" role="form">
+  <div class="form-group">
+    <label for="inputCoverTitle" class="col-sm-2 control-label">Cover Title</label>
+
+    <div class="input-group col-sm-10">
+      <input type="text" class="form-control" id="inputCoverTitle">
+      <span class="input-group-btn">
+        <button class="btn btn-default" type="button">
+          <span class="glyphicon glyphicon-plus"></span>
+        </button>
+      </span>
+    </div>
+  </div>
   </form>
+
 </tal:block>
 </html>

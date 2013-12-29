@@ -1,57 +1,22 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>Home -- Classic Collector</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="${request.static_url('collector:static/dist/css/bootstrap.min.css')}" rel="stylesheet">
-    <link href="${request.static_url('collector:static/jquery-ui/themes/base/jquery.ui.all.css')}" rel="stylesheet">
-    <link href="${request.static_url('collector:static/jquery-ui/themes/base/jquery.ui.autocomplete.css')}" rel="stylesheet">
-
-    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-      <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
-    <![endif]-->
-    <style>
-      .tr-even {
-        background: #f0f0f0;
-      }
-    </style>
-  </head>
-
-  <body>
-    <div class="container">
-
-      <div class="page-header">
-        <h1>Classic Collector 3000</h1>
-        <!-- <p class="lead">Basic grid layouts to get you familiar with building within the Bootstrap grid system.</p> -->
-      </div>
+<html metal:use-macro="base.macros['base']">
+  <tal:block metal:fill-slot="title">${structure: title}</tal:block>
+  <tal:block metal:fill-slot="content">
       
-      <h2>Music by ${composer}</h2>
+  <h2>${structure: title}</h2>
 
-      <table class="table">
-        <thead>
-          <tr><th>Music title</th><th>Cover</th></tr>
-        </thead>
-        <tbody>
-        <tr tal:repeat="(m, crspan, evenclass) music" class="${evenclass}">
-          <td>${m.title}</td>
-          <td tal:condition="crspan != 0" rowspan="${crspan}">
-            <small><a href="${request.route_url('cover', cover_id=m.cover.id)}">${m.cover.title}</a></small>
-          </td>
-        </tr>
-        </tbody>
-      </table>
+  <table class="table">
+    <thead>
+      <tr><th>Music title</th><th>Cover</th></tr>
+    </thead>
+    <tbody>
+    <tr tal:repeat="(m, crspan, evenclass) music" class="${evenclass}">
+      <td>${m.title}</td>
+      <td tal:condition="crspan != 0" rowspan="${crspan}">
+        <small><a href="${request.route_url('cover', cover_id=m.cover.id)}">${m.cover.title}</a></small>
+      </td>
+    </tr>
+    </tbody>
+  </table>
 
-    </div>
-
-    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-    <script src="${request.static_url('collector:static/jquery-2.0.3.js')}"></script>
-    <script src="${request.static_url('collector:static/dist/js/bootstrap.min.js')}"></script>
-    <script src="${request.static_url('collector:static/angular.js')}"></script>
-    <script src="${request.static_url('collector:static/jquery-ui/ui/jquery-ui.js')}"></script>
-    <script src="${request.static_url('collector:static/jquery-ui/ui/jquery.ui.autocomplete.js')}"></script>
-    <script src="${request.static_url('collector:static/collector.js')}"></script>
-  </body>
+  </tal:block>
 </html>

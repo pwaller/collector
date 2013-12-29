@@ -7,30 +7,44 @@
 
     <table class="table">
       <thead>
+        <tr style="border-bottom: none;">
+          <th colspan="11"><em>Title</em></th>
+          <th><em>Performed</em></th>
+          <th><em>Composed</em></th>
+        </tr>
         <tr>
-          <th>Title</th>
           <th>Composer</th>
-          <th>Opus #</th>
+          <th>Opus&nbsp;#</th>
           <th>Quantity</th>
           <th>Type</th>
           <th>Instrument</th>
           <th>Number</th>
-          <th>Key Sig.</th>
-          <th>Work Name</th>
+          <th>Key&nbsp;Sig.</th>
+          <th>Work&nbsp;Name</th>
+          <th>Soloists</th><!-- 
           <th>Soloist 1</th>
-          <th>Soloist 2<th>
+          <th>Soloist 2</th>
           <th>Soloist 3</th>
-          <th>Soloist 4</th>
-          <th>Condutor</th>
+          <th>Soloist 4</th> -->
+          <th>Conductor</th>
           <th>Chorus</th>
           <th>Ensemble</th>
           <th>Class</th>
         </tr>
       </thead>
       <tbody>
-        <tr tal:repeat="m cover.music" data-music-id="${m.id}">
-          <td>${m.title}</td>
-          <td><a href="${request.route_url('composer', composer=m.Composer)}">${m.Composer}</a></td>
+        <tal:block tal:repeat="(i, m) enumerate(cover.music, 1)">
+        <tr data-music-id="${m.id}" class="${'tr-even' if i%2 else ''}">
+          <td colspan="11"><em>${m.title}</em></td>
+          <td><small><em>${m.PerfDateX}</em></small></td>
+          <td><small><em>${m.CompDateX}</em></small></td>
+        </tr>
+        <tr data-music-id="${m.id}" class="${'tr-even' if i%2 else ''}">
+          <td>
+            <a href="${request.route_url('composer', composer=m.Composer)}">
+              ${m.Composer}
+            </a>
+          </td>
           <td>${m.OpusX}</td>
           <td>${m.WorkQty}</td>
           <td>${m.MusicType}</td>
@@ -38,15 +52,17 @@
           <td>${m.WorkNoX}</td>
           <td>${m.KeySig}</td>
           <td>${m.WorkName}</td>
+          <td>${structure: m.soloists(request)}</td><!-- 
           <td>${m.Solo1}</td>
           <td>${m.Solo2}</td>
           <td>${m.Solo3}</td>
-          <td>${m.Solo4}</td>
-          <td>${m.Conductor}</td>
+          <td>${m.Solo4}</td> -->
+          <td>${structure: m.conductor}</td>
           <td>${m.Chorus}</td>
-          <td>${m.Ensemble}</td>
+          <td>${structure: m.ensemble(request)}</td>
           <td>${m.MusicClass}</td>
         </tr>
+        </tal:block>
       </tbody>
     </table>
   </tal:block>
