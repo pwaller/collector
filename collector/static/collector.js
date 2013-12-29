@@ -4,7 +4,7 @@ $(function() {
   $("#search")
     .autocomplete({
       source: "/query",
-      minLength: 2,
+      minLength: 1,
       delay: 50,
       // source: function(request, response) {
       //   //[ "c++", "java", "php", "coldfusion", "javascript", "asp", "ruby" ],
