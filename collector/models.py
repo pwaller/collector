@@ -47,7 +47,19 @@ Base = declarative_base()
 #         self.name = name
 #         self.value = value
 
+def ander(what):
+    what = sorted(what)
+    if len(what) == 0:
+        return ""
+    if len(what) == 1:
+        return what[0]
+
+    body, tail = what[:-1], what[-1]
+    return ",<wbr> ".join(body) + " and " + tail
+
 # Index('my_index', MyModel.name, unique=True, mysql_length=255)
+
+
 class Cover(Base):
     __tablename__ = "Covers"
     __table_args__ = {"extend_existing": True, "sqlite_autoincrement": True}
@@ -57,6 +69,22 @@ class Cover(Base):
 
     def __repr__(self):
         return "<Cover id={0} title={1}>".format(self.id, self.title)
+
+    @property
+    def detail(self):
+        infos = []
+
+        def add_detail(what):
+            facts = set(getattr(m, what) for m in self.music)
+            facts -= set([None])
+            if facts:
+                infos.append("<div>{};</div>".format(ander(facts)))
+
+        add_detail("MusicClass")
+        add_detail("MusicType")
+        add_detail("Instrument")
+
+        return "".join(infos)
 
     id = Column('CoverNo', Integer, primary_key=True, autoincrement=True)
     title = Column('CoverTitle', String)
