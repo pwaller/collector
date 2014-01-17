@@ -173,6 +173,10 @@ class Music(Base):
         return u" ".join(x)
         # return ", ".join(x[:-1]) + " and " + x[-1]
 
+    def complete_soloists(self):
+        raise NotImplementedError("TODO")
+        return 
+
     def composer(self, request):
         def linkify(orig):
             url = request.route_url("composer", who=orig)

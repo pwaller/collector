@@ -20,7 +20,11 @@ def main(global_config, **settings):
 
     config.add_route('cover', '/covers/{cover_id}')
 
+    config.add_route('type', '/type/{who}')
+    config.add_route('types', '/types/')
+
     config.add_route('composer', '/composers/{who}')
+    config.add_route('composer_type', '/composers/{who}/type/{type}')
     config.add_route('composers', '/composers/')
 
     config.add_route('conductor', '/conductors/{who}')

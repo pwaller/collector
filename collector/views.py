@@ -18,6 +18,22 @@ from contextlib import contextmanager
 from time import time
 
 
+from pyramid.renderers import get_renderer
+
+
+# TODO: Use a subscriber instead
+def base():
+    return get_renderer("templates/base.pt").implementation()
+
+# from repoze.events import subscriber
+from pyramid.interfaces import IBeforeRender
+
+
+# @subscriber(IBeforeRender)
+def add_global(event):
+    event['testglob'] = 'foo'
+
+
 @contextmanager
 def t(what):
     start = time()
@@ -95,15 +111,21 @@ from sqlalchemy.sql import func
 
 @view_config(route_name="composers", renderer="templates/composers.pt")
 def view_composers(request):
-    composers = DBSession.query(Music.Composer, func.count(Music.Composer)
-                                ).group_by(Music.Composer
-                                           ).order_by(Music.Composer).all()
+    q = DBSession.query(Music.Composer, func.count(Music.Composer))
+
+    title = "Composers"
+
+    if "type" in request.params:
+        title = request.params["type"]
+        q = q.filter(Music.MusicType == request.params["type"])
+
+    composers = q.group_by(Music.Composer).order_by(Music.Composer).all()
 
     return {
         u"base": base(),
         u"routename": "composer",
         u"people": composers,
-        u"title": "Composers",
+        u"title": title,
     }
 
 
@@ -124,8 +146,8 @@ def view_conductors(request):
 @view_config(route_name="ensembles", renderer="templates/composers.pt")
 def view_ensembles(request):
     ensembles = DBSession.query(Music.Ensemble, func.count(Music.Ensemble)
-                                 ).group_by(Music.Ensemble
-                                            ).order_by(Music.Ensemble).all()
+                                ).group_by(Music.Ensemble
+                                           ).order_by(Music.Ensemble).all()
 
     return {
         u"base": base(),
@@ -175,24 +197,58 @@ def table_group(records, key):
     return zip(records, rowspans, evens)
 
 
-@view_config(route_name="composer", renderer="templates/list_music.pt")
-def view_composer(request):
-    composer = request.matchdict["who"]
+def composer_query(composer):
+    """
+    Return music by `composer`
+    """
 
     music = DBSession.query(Music).filter(
         Music.Composer == composer)
 
     music = music.options(eagerload(Music.cover))
 
+    return music
+
+
+@view_config(route_name="composer", renderer="templates/list_music.pt")
+def view_composer(request):
+    composer = request.matchdict["who"]
+
+    fmt = u"Music composed by {}"
+
+    music = composer_query(composer)
     music = music.all()
 
     result = table_group(music, key=lambda v: v.cover)
 
     return {
         u"base": base(),
-        u"title": u"Music composed by {}".format(composer),
+        u"title": fmt.format(composer),
         u"music": result,
     }
+
+
+@view_config(route_name="composer_type", renderer="templates/list_music.pt")
+def view_composer_type(request):
+    composer = request.matchdict["who"]
+    type_ = request.matchdict["type"]
+
+    fmt = u"{} composed by {}"
+
+    music = composer_query(composer)
+    music = music.all()
+
+    result = table_group(music, key=lambda v: v.cover)
+
+    return {
+        u"base": base(),
+        u"title": fmt.format(type_, composer),
+        u"music": result,
+    }
+
+    if "type" in request.params:
+        music = music.filter(Music.MusicType == request.params["type"])
+        fmt = u"{} composed by {{}}".format(request.params["type"])
 
 
 @view_config(route_name="conductor", renderer="templates/list_music.pt")
@@ -235,19 +291,35 @@ def view_ensemble(request):
     }
 
 
-from pyramid.renderers import get_renderer
-
-
-def base():
-    return get_renderer("templates/base.pt").implementation()
-
-
 @view_config(route_name="cover", renderer="templates/cover.pt")
 def view_cover(request):
     cover_id = request.matchdict["cover_id"]
 
     cover = DBSession.query(Cover).filter(Cover.id == cover_id).one()
-    return {"cover": cover, "base": base()}
+
+    def complete_distinct(what):
+        values = DBSession.query(what).distinct().order_by(what).all()
+        return json.dumps([{"value": x} for (x,) in values])
+
+
+    # <td><div contenteditable class="input-soloists">
+    # <td><div contenteditable class="input-conductor">
+    # <td><div contenteditable class="input-chorus">
+    # <td><div contenteditable class="input-ensemble">
+    # <td><div contenteditable class="input-musicclass">
+
+    return {
+        "base": base(),
+        "cover": cover,
+        "composers": complete_distinct(Music.Composer),
+        "music_types": complete_distinct(Music.MusicType),
+        "instruments": complete_distinct(Music.Instrument),
+        "soloists": Music.complete_soloists,
+        "conductors": complete_distinct(Music.Conductor),
+        "choruses": complete_distinct(Music.Chorus),
+        "ensembles": complete_distinct(Music.Ensemble),
+        "musicclasses": complete_distinct(Music.MusicClass),
+    }
 
 
 @view_config(route_name="download")
@@ -282,4 +354,18 @@ def view_soloist(request):
         "base": base(),
         "music": table_group(music, lambda m: m.cover),
         "title": u"Soloist {}".format(soloist)
+    }
+
+
+@view_config(route_name="types", renderer="templates/composers.pt")
+def view_types(request):
+    types = DBSession.query(Music.MusicType, func.count(Music.MusicType)
+                            ).group_by(Music.MusicType
+                                       ).order_by(Music.MusicType).all()
+
+    return {
+        u"base": base(),
+        u"people": types,
+        u"title": u"Types",
+        u"routename": u"type",
     }

@@ -1,7 +1,25 @@
 <html metal:use-macro="base.macros['base']">
   <tal:block metal:fill-slot="title">Cover</tal:block>
   <tal:block metal:fill-slot="content">
-    <h2>${cover.title}</h2>
+    <style>
+      /* Super specific rule to override bootstrap */
+      table.table > tbody.editable > tr > td {
+        padding: 2px;
+      }
+      td > input {
+        padding: 8px;
+        background-color: transparent;
+        border: 0px;
+      }
+    </style>
+    <script>
+      have_autocomplete = true;
+      composers = ${composers};
+      music_types = ${music_types};
+      instruments = ${instruments};
+      keys = ["a\u266d", "a", "a\u266f", "A\u266d", "A", "A\u266f", "b\u266d", "b", "b\u266f", "B\u266d", "B", "B\u266f", "c\u266d", "c", "c\u266f", "C\u266d", "C", "C\u266f", "d\u266d", "d", "d\u266f", "D\u266d", "D", "D\u266f", "e\u266d", "e", "e\u266f", "E\u266d", "E", "E\u266f", "f\u266d", "f", "f\u266f", "F\u266d", "F", "F\u266f", "g\u266d", "g", "g\u266f", "G\u266d", "G", "G\u266f"];
+    </script>
+    <h2 contenteditable>${cover.title}</h2>
 
     <small>Catalogued: ${cover.CatDate.strftime("%Y/%m/%d")}</small>
 
@@ -32,31 +50,36 @@
           <th>Class</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody class="editable">
         <tal:block tal:repeat="(i, m) enumerate(cover.music, 1)">
         <tr data-music-id="${m.id}" class="${'tr-even' if i%2 else ''}">
-          <td colspan="11"><em>${m.title}</em></td>
-          <td><small><em>${m.PerfDateX}</em></small></td>
-          <td><small><em>${m.CompDateX}</em></small></td>
+          <td contenteditable colspan="11"><em><div contenteditable id="Title" class="input-title">${m.title}</em></td>
+          <td contenteditable><small><em><div contenteditable id="PerfDateX" class="input-perfdatex${m.PerfDateX}</em></small></td>
+          <td contenteditable><small><em>${m.CompDateX}</em></small></td>
         </tr>
         <tr data-music-id="${m.id}" class="${'tr-even' if i%2 else ''}">
-          <td>${structure: m.composer(request)}</td>
-          <td>${m.OpusX}</td>
-          <td>${m.WorkQty}</td>
-          <td>${m.MusicType}</td>
-          <td>${m.Instrument}</td>
-          <td>${structure: m.number}</td>
-          <td>${m.KeySig}</td>
-          <td>${m.WorkName}</td>
-          <td>${structure: m.soloists(request)}</td><!-- 
-          <td>${m.Solo1}</td>
-          <td>${m.Solo2}</td>
-          <td>${m.Solo3}</td>
-          <td>${m.Solo4}</td> -->
-          <td>${structure: m.conductor(request)}</td>
-          <td>${m.Chorus}</td>
-          <td>${structure: m.ensemble(request)}</td>
-          <td>${m.MusicClass}</td>
+          <td><div contenteditable id="Composer" class="input-composer">${structure: m.composer(request)}</div></td>
+          <td><div contenteditable id="OpusX" class="input-opus">${m.OpusX}</div></td>
+          <td><div contenteditable id="WorkQty" class="input-workqty">${m.WorkQty}</div></td>
+          <td><div contenteditable id="MusicType" class="input-musictype">${m.MusicType}</div></td>
+          <td><div contenteditable id="Instrument" class="input-instrument">${m.Instrument}</div></td>
+          <td><div contenteditable id="WorkNoX" class="">${structure: m.number}</div></td>
+          <td><div contenteditable id="KeySig" class="input-keys">${m.KeySig}</div></td>
+          <td><div contenteditable id="WorkName" class="">${m.WorkName}</div></td>
+          <td><div contenteditable id="Soloists" class="input-soloists">
+            ${structure: m.soloists(request)}</div></td><!-- 
+          <td><div contenteditable>${m.Solo1}</div></td>
+          <td><div contenteditable>${m.Solo2}</div></td>
+          <td><div contenteditable>${m.Solo3}</div></td>
+          <td><div contenteditable>${m.Solo4}</t</div>d> -->
+          <td><div contenteditable id="Conductor" class="input-conductor">
+            ${structure: m.conductor(request)}</div></td>
+          <td><div contenteditable id="Chorus" class="input-chorus">
+            ${m.Chorus}</div></td>
+          <td><div contenteditable id="Ensemble" class="input-ensemble">
+            ${structure: m.ensemble(request)}</div></td>
+          <td><div contenteditable id="MusicClass" class="input-musicclass">
+            ${m.MusicClass}</div></td>
         </tr>
         </tal:block>
       </tbody>

@@ -1,6 +1,7 @@
 <tal:block metal:define-macro="base"><!DOCTYPE html>
 <html>
   <head>
+    <script>have_autocomplete = false;</script>
     <title><tal:block metal:define-slot="title">Home</tal:block> -- Classic Collector</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="${request.static_url('collector:static/dist/css/bootstrap.min.css')}" rel="stylesheet">
@@ -16,6 +17,9 @@
     <style>
       .tr-even {
         background: #f0f0f0;
+      }
+      thead {
+        background: white;
       }
     </style>
   </head>
@@ -46,6 +50,8 @@
             <a href="${request.route_url('soloists')}">Soloists</a></li>
           <li class="${'active' if request.path.startswith('/ensembles/') else ''}">
             <a href="${request.route_url('ensembles')}">Ensembles</a></li>
+          <li class="${'active' if request.path.startswith('/types/') else ''}">
+            <a href="${request.route_url('types')}">Types</a></li>
           <!-- 
           <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown">Dropdown <b class="caret"></b></a>
@@ -100,6 +106,7 @@
     <script src="${request.static_url('collector:static/angular.js')}"></script>
     <script src="${request.static_url('collector:static/jquery-ui/ui/jquery-ui.js')}"></script>
     <script src="${request.static_url('collector:static/jquery-ui/ui/jquery.ui.autocomplete.js')}"></script>
+    <script src="${request.static_url('collector:static/sticky-table-headers/js/jquery.stickytableheaders.js')}"></script>
     <script src="${request.static_url('collector:static/collector.js')}"></script>
   </body>
 </html>

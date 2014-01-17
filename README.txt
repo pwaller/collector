@@ -12,3 +12,9 @@ Getting Started
 
 - $venv/bin/pserve development.ini
 
+TODO
+----
+
+- Adding covers
+- Editing covers
+
