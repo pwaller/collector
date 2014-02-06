@@ -66,6 +66,8 @@ class Cover(Base):
 
     def __init__(self, title):
         self.title = title
+        self.CatDate = datetime.now()
+        self.Format = "C.D."
 
     def __repr__(self):
         return "<Cover id={0} title={1}>".format(self.id, self.title)
