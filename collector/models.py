@@ -179,6 +179,8 @@ class Music(Base):
 
     def composer(self, request):
         def linkify(orig):
+            if orig is None:
+                return ""
             url = request.route_url("composer", who=orig)
             fmt = u'<a href="{}">{}</a>'
             return fmt.format(url, orig.replace(u" ", u"&nbsp;"))
@@ -213,6 +215,9 @@ class Music(Base):
         if self.WorkNoX:
             return self.WorkNoX.replace(u" ", u"&nbsp;")
         return u""
+
+    def link(self, request):
+        return request.route_url("cover", cover_id=self.cover.id, _anchor='{{"music_id":{}}}'.format(self.id))
 
     # Fields from Patrick's email:
     # Music: Composer, opus no, quantity, work type, instrument, number, key,

@@ -3,6 +3,7 @@ import json
 from collections import defaultdict
 from itertools import groupby
 
+from pyramid.httpexceptions import HTTPFound
 from pyramid.response import FileIter, Response
 from pyramid.view import view_config
 from pyramid.url import urlencode
@@ -126,6 +127,7 @@ def view_composers(request):
         u"routename": "composer",
         u"people": composers,
         u"title": title,
+        u"_query": {},
     }
 
 
@@ -140,6 +142,7 @@ def view_conductors(request):
         u"people": conductors,
         u"title": u"Conductors",
         u"routename": u"conductor",
+        u"_query": {},
     }
 
 
@@ -154,6 +157,7 @@ def view_ensembles(request):
         u"people": ensembles,
         u"title": u"Ensembles",
         u"routename": u"ensemble",
+        u"_query": {},
     }
 
 
@@ -176,6 +180,7 @@ def view_soloists(request):
         u"people": sorted(soloists.items()),
         u"title": u"Soloists",
         u"routename": u"soloist",
+        u"_query": {},
     }
 
 
@@ -217,6 +222,13 @@ def view_composer(request):
     fmt = u"Music composed by {}"
 
     music = composer_query(composer)
+
+    if "type" in request.params:
+        music = music.filter(Music.MusicType == request.params["type"])
+
+    if "q" in request.params:
+        music = music.filter(Music.title.like("%{}%".format(request.params["q"])))
+
     music = music.all()
 
     result = table_group(music, key=lambda v: v.cover)
@@ -275,8 +287,10 @@ def view_conductor(request):
 def view_ensemble(request):
     ensemble = request.matchdict["who"]
 
+    # TODO(pwaller): query covers which have a music.ensemble
+
     music = DBSession.query(Music).filter(
-        Music.Ensemble == ensemble)
+        Music.Ensemble == ensemble).order_by(Music.title)
 
     music = music.options(eagerload(Music.cover))
 
@@ -291,6 +305,73 @@ def view_ensemble(request):
     }
 
 
+@view_config(route_name="cover_put", renderer="json")
+def update_cover(request):
+    p = request.params
+
+    if "cover_id" in p:
+        # cover specific updates
+        cover_id = p["cover_id"]
+        c = DBSession.query(Cover).get(cover_id)
+        if p["field"] == "title":
+            c.title = p["value"]
+        elif p["field"] == "notes":
+            c.CommentsC = p["value"]
+            print "Updated CommentsC: ", c.CommentsC
+        else:
+            raise NotImplementedError
+        return {"status": "success"}
+
+    music_id, field, value = p["music_id"], p["field"], p["value"]
+
+    if p["field"] == "Soloists":
+        raise NotImplementedError
+
+    m = DBSession.query(Music).get(music_id)
+
+    setattr(m, p["field"], p["value"])
+
+    # DBSession.commit()
+
+    return {"status": "success"}
+
+
+@view_config(route_name="cover_new", renderer="json")
+def cover_new(request):
+    c = Cover(request.params["title"])
+    DBSession.add(c)
+    DBSession.flush()
+    return HTTPFound(request.route_url("cover", cover_id=c.id))
+    return request.params["title"]
+
+
+@view_config(route_name="cover_post", renderer="json")
+def cover_add_music(request):
+    p = request.params
+
+    cover_id = request.matchdict["cover_id"]
+
+    # m = Music()
+    # c.musi
+    # music_id = p["music_id"]
+
+    c = DBSession.query(Cover).get(cover_id)
+
+    m = Music()
+    c.music.append(m)
+
+    # c = Cover()
+    # DBSession.add(c)
+
+    # m.music.append(c)
+
+    print "Added new music to cover: {}".format(c, m)
+
+    # DBSession.commit()
+
+    return {"status": "success", "newId": m.id}
+
+
 @view_config(route_name="cover", renderer="templates/cover.pt")
 def view_cover(request):
     cover_id = request.matchdict["cover_id"]
@@ -301,24 +382,33 @@ def view_cover(request):
         values = DBSession.query(what).distinct().order_by(what).all()
         return json.dumps([{"value": x} for (x,) in values])
 
+    # Used so that the "Add new row" button can copy this record if the cover
+    # is otherwise empty.
+    # class Placeholder(object):
+    #     id = None
+    #     title = ""
+    #     PerfDateX = ""
+
+    placeholder = Music()
 
     # <td><div contenteditable class="input-soloists">
     # <td><div contenteditable class="input-conductor">
     # <td><div contenteditable class="input-chorus">
     # <td><div contenteditable class="input-ensemble">
     # <td><div contenteditable class="input-musicclass">
-
     return {
         "base": base(),
         "cover": cover,
         "composers": complete_distinct(Music.Composer),
-        "music_types": complete_distinct(Music.MusicType),
+        "musicTypes": complete_distinct(Music.MusicType),
         "instruments": complete_distinct(Music.Instrument),
-        "soloists": Music.complete_soloists,
+        # "soloists": Music.complete_soloists(),
+        "soloists": [],
         "conductors": complete_distinct(Music.Conductor),
         "choruses": complete_distinct(Music.Chorus),
         "ensembles": complete_distinct(Music.Ensemble),
-        "musicclasses": complete_distinct(Music.MusicClass),
+        "musicClasses": complete_distinct(Music.MusicClass),
+        "placeholder": placeholder,
     }
 
 
@@ -366,6 +456,26 @@ def view_types(request):
     return {
         u"base": base(),
         u"people": types,
-        u"title": u"Types",
+        u"title": u"Music types",
         u"routename": u"type",
+        u"_query": {},
+    }
+
+
+@view_config(route_name="type", renderer="templates/composers.pt")
+def view_type(request):
+
+    what = request.matchdict["who"]
+
+    q = DBSession.query(Music.Composer, func.count(
+        Music.Composer)).filter(Music.MusicType == what)
+
+    composers = q.group_by(Music.Composer).order_by(Music.Composer).all()
+
+    return {
+        u"base": base(),
+        u"routename": "composer",
+        u"people": composers,
+        u"title": "Composers of {}".format(what),
+        u"_query": {"type": what},
     }

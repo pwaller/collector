@@ -1,9 +1,13 @@
 <html metal:use-macro="base.macros['base']">
 <tal:block metal:fill-slot="content">
+  
   <div class="jumbotron">
     <h2 style="margin-top: 0px;">Type something to start:</h2>
-    <form>
-      <input id="search" type="text" class="form-control" />
+
+    <hr>
+
+    <form class="form-search">
+      <input id="search" placeholder="Composer, work name, ..." type="text" class="form-control" />
     </form>
   </div>
 
@@ -11,22 +15,40 @@
 
   <h3>or, add a new cover:</h3>
 
+
+    <div class="form-group">
+
+      <form class="form-horizontal" role="form" id="newCoverForm" action="/covers" method="POST">
+      <div class="input-group">
+        
+        <input type="hidden" name="foo" value="bar" />
+        <input type="text" placeholder="Cover Title" class="form-control" id="inputCoverTitle" name="title">
+
+        <span class="input-group-btn">
+          <button class="btn btn-default" type="submit">
+            <span class="glyphicon glyphicon-plus"></span>
+          </button>
+        </span>
+
+      </div>
+      </form>
+    </div>
+
   <hr>
 
-  <form class="form-horizontal" role="form">
-  <div class="form-group">
-    <label for="inputCoverTitle" class="col-sm-2 control-label">Cover Title</label>
-
-    <div class="input-group col-sm-10">
-      <input type="text" class="form-control" id="inputCoverTitle">
-      <span class="input-group-btn">
-        <button class="btn btn-default" type="button">
-          <span class="glyphicon glyphicon-plus"></span>
-        </button>
-      </span>
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-4">
+        <h3>Recently changed</h3>
+      </div>
+      <div class="col-md-4">
+        <h3>Recently viewed</h3>
+      </div>
+      <div class="col-md-4">
+        <h3>Recently added</h3>
+      </div>
     </div>
   </div>
-  </form>
 
 </tal:block>
 </html>

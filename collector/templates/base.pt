@@ -4,6 +4,7 @@
     <script>have_autocomplete = false;</script>
     <title><tal:block metal:define-slot="title">Home</tal:block> -- Classic Collector</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
     <link href="${request.static_url('collector:static/dist/css/bootstrap.min.css')}" rel="stylesheet">
     <link href="${request.static_url('collector:static/jquery-ui/themes/base/jquery.ui.all.css')}" rel="stylesheet">
     <link href="${request.static_url('collector:static/jquery-ui/themes/base/jquery.ui.autocomplete.css')}" rel="stylesheet">
@@ -21,7 +22,9 @@
       thead {
         background: white;
       }
+      <tal:block metal:define-slot="style"></tal:block>
     </style>
+
   </head>
 
   <body>
@@ -67,7 +70,7 @@
           </li> -->
         </ul>
 
-        <form style="width: 50%" class="navbar-form navbar-right" role="search"
+        <form style="width: 30%" class="navbar-form navbar-right form-search" role="search"
           tal:condition="request.path != '/'">
           <!-- <div class="form-group">
             <div class="input-group">
@@ -101,9 +104,9 @@
     </div>
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-    <script src="${request.static_url('collector:static/jquery-2.0.3.js')}"></script>
+    <script src="${request.static_url('collector:static/jquery-2.1.0.js')}"></script>
     <script src="${request.static_url('collector:static/dist/js/bootstrap.min.js')}"></script>
-    <script src="${request.static_url('collector:static/angular.js')}"></script>
+    <!-- <script src="${request.static_url('collector:static/angular.js')}"></script> -->
     <script src="${request.static_url('collector:static/jquery-ui/ui/jquery-ui.js')}"></script>
     <script src="${request.static_url('collector:static/jquery-ui/ui/jquery.ui.autocomplete.js')}"></script>
     <script src="${request.static_url('collector:static/sticky-table-headers/js/jquery.stickytableheaders.js')}"></script>

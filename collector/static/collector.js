@@ -13,8 +13,35 @@ $(function() {
     $(".input-musictype").autocomplete({source: music_types, autoFocus: true, delay: 0})
     $(".input-keys").autocomplete({source: keys, autoFocus: true, delay: 0})
     $(".input-instrument").autocomplete({source: instruments, autoFocus: true, delay: 0})
-    $(".input-workqty").autocomplete({source: [], autoFocus: true, delay: 0})
-    $(".input-opus").autocomplete({source: [], autoFocus: true, delay: 0})
+    $(".input-conductor").autocomplete({source: conductors, autoFocus: true, delay: 0})
+    $(".input-soloists").autocomplete({source: soloists, autoFocus: true, delay: 0})
+    $(".input-chorus").autocomplete({source: choruses, autoFocus: true, delay: 0})
+    $(".input-ensemble").autocomplete({source: ensembles, autoFocus: true, delay: 0})
+    $(".input-music-class").autocomplete({source: musicClasses, autoFocus: true, delay: 0})
+
+    $(".inputable").autocomplete({source: []})
+
+    $(".input-title").on("focusin", function() {
+      // console.log("Focussed: ", $(this))
+      // foo = $(this);
+      var theButton = $(this).parents("tr").find("button")
+      theButton.animate({opacity: "toggle"})
+    })
+    $(".input-title").on("focusout", function() {
+      console.log("unFocussed: ", $(this))
+      var theButton = $(this).parents("tr").find("button")
+      theButton.animate({opacity: "toggle"})
+      // setTimeout(function() {
+      //   theButton.hide()
+      // }, 1000);
+    })
+
+
+    $("table").on("focusin", function() {
+
+    })
+    // $(".input-workqty").autocomplete({source: [], autoFocus: true, delay: 0})
+    // $(".input-opus").autocomplete({source: [], autoFocus: true, delay: 0})
     
   }
 
@@ -63,32 +90,135 @@ $(function() {
       };
   }
 
-  $("form").on("submit", function(ev) { ev.preventDefault(); console.log("Submit ", $("#search").val()) })
+  // $(".form-search").on("submit", function(ev) { ev.preventDefault(); console.log("Submit ", $("#search").val()) })
 
-  $("table").stickyTableHeaders()
+  // $("#newCoverForm").on("submit", function(ev) {
 
-  $("table").on("change", function(ev) {
+  // })
+
+  $(".sticky-header").stickyTableHeaders()
+
+  var animateInProgress = function(what) {
+    what.animate({"background-color": "#eaeaff"}, 100);
+  }
+
+  var animateSuccess = function(what) {
+    thing.animate({"background-color": "#aaffaa"}, 200)
+         .animate({"background-color": "transparent"}, 1500)
+  }
+
+  var animateFailure = function(what) {
+    thing.animate({"background-color": "#ffaaaa"}, 200)
+  }
+
+  $("#cover-title").on("change", function(ev) {
+
+    thing = $(this);
+
+    cover_id = thing.data("cover-id")
+    value = thing.text()
+
+    animateInProgress(thing)
+
+    $.ajax({type: "put", dataType: "json", data: {cover_id: cover_id, field: "title", value: value }})
+      .done(function() {
+        animateSuccess(thing)
+      })
+      .error(function() {
+        animateFailure(thing)
+      })
+  })
+
+
+  $("#cover-notes").on("change", function(ev) {
+
+    thing = $(this);
+
+    cover_id = thing.data("cover-id")
+    value = thing.val() // NOTE: this line is different between things
+
+    animateInProgress(thing)
+
+    // return
+
+    $.ajax({type: "put", dataType: "json", data: {cover_id: cover_id, field: "notes", value: value }})
+      .done(function() {
+        animateSuccess(thing)
+      })
+      .error(function() {
+        animateFailure(thing)
+      })
+  })
+
+  $(".table-editable").on('focus', "div", function() {
+    console.log("Focus")
+    contentBefore = $(this).html();
+  }).on('blur', "div", function() { 
+    console.log("Blur")
+    if (contentBefore != $(this).html()) {
+      console.log("CHANGED!")
+      $(this).trigger('change')
+    }
+  })
+
+  // TODO(pwaller): change isn't taking for new rows added, may be I need something better than "on"?
+  $(".table-editable").on("change", "div", function(ev) {
     // console.log("Hi")
     // return
 
     thing = $(ev.target)
-    id = thing.attr("id")
+    field = thing.attr("id")
     parent = thing.parents("tr")
     music_id = parent.data("music-id")
-    console.log(ev, "Field was updated : ", parent, music_id, id)
+    value = thing.text()
+    console.log("Field was updated : ", music_id, field, value)
 
-    thing.css("background-color", "rgb(192, 192, 255)")
+    animateInProgress(thing)
 
-    $.post("blarg")
+    $.ajax({type: "put", dataType: "json", data: {music_id: music_id, field: field, value: value }})
       .done(function() {
-        console.log("Done!")
-        thing.css("background-color", "")
+        animateSuccess(thing)
+      })
+     .error(function() {
+        animateFailure(thing)
+      })
+    // Make a post request
+  })
+
+  // $("#add-row").focus()
+
+  $("#add-row").click(function() {
+
+    row = $(this).parents("tr")
+
+    second = row.prev()
+    first = second.prev()
+
+    first = first.clone(); first.find("div").html("");
+    second = second.clone(); second.find("div").html("");
+
+    first.toggleClass("tr-even")
+    second.toggleClass("tr-even")
+
+    first.removeClass("hide-row")
+    second.removeClass("hide-row")
+
+    console.log("First ", first)
+    console.log("Second ", second)
+
+    first.find("div").first().focus()
+
+    row.before(first).before(second)
+    // TODO: toggle 'tr-even'-ness
+    row.toggleClass("tr-even")
+
+    $.ajax({type: "post", dataType: "json", data: {}})
+      .done(function() {
+        console.log("New music requested")
       })
       .error(function() {
         console.log("There was a problem")
-        thing.css("background-color", "rgb(255, 192, 192)")
       })
-    // Make a post request
   })
 
   $("#search").focus()

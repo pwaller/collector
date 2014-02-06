@@ -1,29 +1,56 @@
 <html metal:use-macro="base.macros['base']">
+
   <tal:block metal:fill-slot="title">Cover</tal:block>
+  <tal:block metal:fill-slot="style">
+    /* Super specific rule to override bootstrap */
+    table.table > tbody.editable > tr > td {
+      padding: 2px;
+    }
+    td > input {
+      padding: 8px;
+      background-color: transparent;
+      border: 0px;
+    }
+    .hide-row {
+      display: none;
+    }
+  </tal:block>
   <tal:block metal:fill-slot="content">
-    <style>
-      /* Super specific rule to override bootstrap */
-      table.table > tbody.editable > tr > td {
-        padding: 2px;
-      }
-      td > input {
-        padding: 8px;
-        background-color: transparent;
-        border: 0px;
-      }
-    </style>
     <script>
       have_autocomplete = true;
       composers = ${composers};
-      music_types = ${music_types};
+      music_types = ${musicTypes};
       instruments = ${instruments};
       keys = ["a\u266d", "a", "a\u266f", "A\u266d", "A", "A\u266f", "b\u266d", "b", "b\u266f", "B\u266d", "B", "B\u266f", "c\u266d", "c", "c\u266f", "C\u266d", "C", "C\u266f", "d\u266d", "d", "d\u266f", "D\u266d", "D", "D\u266f", "e\u266d", "e", "e\u266f", "E\u266d", "E", "E\u266f", "f\u266d", "f", "f\u266f", "F\u266d", "F", "F\u266f", "g\u266d", "g", "g\u266f", "G\u266d", "G", "G\u266f"];
+      conductors = ${conductors}
+      soloists = ${soloists}
+      choruses = ${choruses}
+      ensembles = ${ensembles}
+      musicClasses = ${musicClasses};
     </script>
-    <h2 contenteditable>${cover.title}</h2>
+    
+    <hr>
 
-    <small>Catalogued: ${cover.CatDate.strftime("%Y/%m/%d")}</small>
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-md-6">
 
-    <table class="table">
+          <h2 contenteditable style="margin-top: 0" class="inputable" id="cover-title" data-cover-id="${cover.id}">${cover.title}</h2>
+
+          <small>Catalogued &ndash; ${cover.CatDate.strftime("%Y/%m/%d")} | Format: ${cover.Format}</small>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group">
+            <textarea id="cover-notes" placeholder="notes" class="form-control"  data-cover-id="${cover.id}">${cover.CommentsC}</textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <hr>
+
+    <table class="table table-condensed sticky-header table-editable">
       <thead>
         <tr style="border-bottom: none;">
           <th colspan="11"><em>Title</em></th>
@@ -51,21 +78,27 @@
         </tr>
       </thead>
       <tbody class="editable">
-        <tal:block tal:repeat="(i, m) enumerate(cover.music, 1)">
-        <tr data-music-id="${m.id}" class="${'tr-even' if i%2 else ''}">
-          <td contenteditable colspan="11"><em><div contenteditable id="Title" class="input-title">${m.title}</em></td>
-          <td contenteditable><small><em><div contenteditable id="PerfDateX" class="input-perfdatex${m.PerfDateX}</em></small></td>
-          <td contenteditable><small><em>${m.CompDateX}</em></small></td>
+        <tal:block tal:repeat="(i, m) enumerate([placeholder] + cover.music)">
+        <tr data-music-id="${m.id}" class="${'tr-even' if i%2 else ''}${' hide-row' if i == 0 else ''}">
+          <td colspan="11">
+            <button style="display: none; float: left; margin-right: 1em;" type="button" class="btn btn-default btn-xs">
+              <span style="color: #eeaaaa;" class="glyphicon glyphicon-remove"></span>
+            </button>
+            <em><div contenteditable id="title" class="inputable input-title">${m.title}</div></em>
+            <!-- <div style="background: red; float: right; width: 100px;">Foo</div> -->
+          </td>
+          <td><small><em><div contenteditable id="PerfDateX" class="inputable">${m.PerfDateX}</div></em></small></td>
+          <td><small><em><div contenteditable id="CompDateX" class="inputable">${m.CompDateX}</div></em></small></td>
         </tr>
-        <tr data-music-id="${m.id}" class="${'tr-even' if i%2 else ''}">
+        <tr data-music-id="${m.id}" class="${'tr-even' if i % 2 else ''}${' hide-row' if i == 0 else ''}">
           <td><div contenteditable id="Composer" class="input-composer">${structure: m.composer(request)}</div></td>
-          <td><div contenteditable id="OpusX" class="input-opus">${m.OpusX}</div></td>
-          <td><div contenteditable id="WorkQty" class="input-workqty">${m.WorkQty}</div></td>
+          <td><div contenteditable id="OpusX" class="inputable">${m.OpusX}</div></td>
+          <td><div contenteditable id="WorkQty" class="inputable">${m.WorkQty}</div></td>
           <td><div contenteditable id="MusicType" class="input-musictype">${m.MusicType}</div></td>
           <td><div contenteditable id="Instrument" class="input-instrument">${m.Instrument}</div></td>
-          <td><div contenteditable id="WorkNoX" class="">${structure: m.number}</div></td>
+          <td><div contenteditable id="WorkNoX" class="inputable">${structure: m.number}</div></td>
           <td><div contenteditable id="KeySig" class="input-keys">${m.KeySig}</div></td>
-          <td><div contenteditable id="WorkName" class="">${m.WorkName}</div></td>
+          <td><div contenteditable id="WorkName" class="inputable">${m.WorkName}</div></td>
           <td><div contenteditable id="Soloists" class="input-soloists">
             ${structure: m.soloists(request)}</div></td><!-- 
           <td><div contenteditable>${m.Solo1}</div></td>
@@ -78,10 +111,14 @@
             ${m.Chorus}</div></td>
           <td><div contenteditable id="Ensemble" class="input-ensemble">
             ${structure: m.ensemble(request)}</div></td>
-          <td><div contenteditable id="MusicClass" class="input-musicclass">
+          <td><div contenteditable id="MusicClass" class="input-music-class">
             ${m.MusicClass}</div></td>
         </tr>
         </tal:block>
+        <tr rowspan="2" class="${'tr-even' if len(cover.music) % 2 == 0 else ''}">
+          <td colspan="13" style="text-align: center; vertical-align: middle;"><button id="add-row" style="background-color: #efe; width: 80%;" class="btn btn-default">Add new row</button></td>
+        </tr>
+
       </tbody>
     </table>
   </tal:block>

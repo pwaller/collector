@@ -1,10 +1,15 @@
 <html metal:use-macro="base.macros['base']">
   <tal:block metal:fill-slot="title">${structure: title}</tal:block>
   <tal:block metal:fill-slot="content">
-      
+  
+  <form method="GET">
+    <label for="q">Work name search</label>
+    <input class="form-control" id="q" type="text" name="q"></input>
+  </form>
+
   <h2>${structure: title}</h2>
 
-  <table class="table">
+  <table class="table sticky-header">
     <thead>
       <tr>
         <th>Cover</th>
@@ -18,7 +23,7 @@
         <br />
         <small>${structure: m.cover.detail}</small>
       </td>
-      <td>${m.title}</td>
+      <td><a href="${m.link(request)}">${m.title}</a></td>
     </tr>
     </tbody>
   </table>

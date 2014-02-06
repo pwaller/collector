@@ -18,7 +18,10 @@ def main(global_config, **settings):
     config.add_route('download', '/download')
     config.add_route('query', '/query')
 
-    config.add_route('cover', '/covers/{cover_id}')
+    config.add_route('cover', '/covers/{cover_id}', request_method="GET")
+    config.add_route('cover_put', '/covers/{cover_id}', request_method="PUT")
+    config.add_route('cover_post', '/covers/{cover_id}', request_method="POST")
+    config.add_route('cover_new', '/covers', request_method="POST")
 
     config.add_route('type', '/type/{who}')
     config.add_route('types', '/types/')

@@ -10,7 +10,7 @@
       <span style="text-align: right; width: 5em; color: #999; display: inline-block;">
         ${count}
       </span>
-      <a href="${request.route_url(routename, who=person)}">${person}</a>
+      <a href="${request.route_url(routename, who=person, _query=_query)}">${person}</a>
     </div>
   </div>
 
